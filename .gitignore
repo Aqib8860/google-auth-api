@@ -1,5 +1,5 @@
 env
-rooms/local_settings.py
+local_settings.py
 venv
 
 __pycache__
