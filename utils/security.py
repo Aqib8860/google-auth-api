@@ -14,7 +14,7 @@ import os
 
 import functools
 
-def hash_password(password: str):
+async def hash_password(password: str):
     return base64.b64encode(hashlib.pbkdf2_hmac(
         'sha256', # The hash digest algorithm for HMAC
         password.encode('iso-8859-1'), # Convert the password to bytes
