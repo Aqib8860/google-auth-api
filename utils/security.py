@@ -20,7 +20,7 @@ def hash_password(password: str):
         password.encode('iso-8859-1'), # Convert the password to bytes
         SECURITY.SECRET_KEY.encode("iso-8859-1"), # Provide the salt
         100000 # It is recommended to use at least 100,000 iterations of SHA-256 
-    )).decode()
+    )).decode("iso-8859-1")
 
 async def authenticate(email: str, password: str, required_fields: dict = {'_id': True}) -> bool:
     user = None
