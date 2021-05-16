@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### VirtualEnv template
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 
 
-local_settings.py
+*/local_settings.py
 
 .Python
 [Bb]in
@@ -542,10 +541,3 @@ FodyWeavers.xsd
 #*.iws /out/
 
 media
-=======
-env
-
-venv
-
-__pycache__
->>>>>>> 209eb2f42a59d4f8b6dd0dcc677e4dbf8dfc8792
