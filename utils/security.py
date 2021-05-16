@@ -14,13 +14,13 @@ import os
 
 import functools
 
-async def hash_password(password: str):
-    return str(hashlib.pbkdf2_hmac(
+def hash_password(password: str):
+    return base64.b64encode(hashlib.pbkdf2_hmac(
         'sha256', # The hash digest algorithm for HMAC
-        password.encode('utf-8'), # Convert the password to bytes
+        password.encode('iso-8859-1'), # Convert the password to bytes
         SECURITY.SECRET_KEY.encode("iso-8859-1"), # Provide the salt
         100000 # It is recommended to use at least 100,000 iterations of SHA-256 
-    ))
+    )).decode()
 
 async def authenticate(email: str, password: str, required_fields: dict = {'_id': True}) -> bool:
     user = None
