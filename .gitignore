@@ -1,7 +1,8 @@
 env
-server/local_settings.py
+
 venv
 
 __pycache__
 
-kite-installer
+
+local_settings.py
