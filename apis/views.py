@@ -7,6 +7,9 @@ from utils.security import jwt_authentication
 
 from bson import ObjectId
 
+from asyncstdlib.builtins import map as amap
+from asyncstdlib.builtins import tuple as atuple
+
 # Authentication endpoints
 class GoogleAuthEndpoint(HTTPEndpoint):
     async def get(self, request):
@@ -50,7 +53,7 @@ class Profile(HTTPEndpoint):
 
 
 # Follow APIs
-class Follower(HTTPEndpoint):
+class Following(HTTPEndpoint):
 
     DATA_STORED = {
         "_id": True,
@@ -74,12 +77,12 @@ class Follower(HTTPEndpoint):
         return JSONResponse(content={
             "message": "Following List",
             "status": True,
-            "data": await convert_to_json(following["following"])
+            "data":  await atuple(amap(convert_to_json, following["following"]))
         }, status_code=200)
 
     @jwt_authentication
     async def post(self, request):
-        request_body = request.json()
+        request_body = await request.json()
         to_id = request_body.get("id")
 
         with Connect() as client:
@@ -88,28 +91,30 @@ class Follower(HTTPEndpoint):
             from_user = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, self.DATA_STORED)
 
 
-            client.auth.profile.update_one({"_id": ObjectId(request.user_id)}, {
-                "$push": {
-                    "following": to_user,
-                },
-                "$inc": {
-                    "following_count": 1
-                }
-            })
+            if not client.auth.profile.find_one({"_id": ObjectId(request.user_id),"following": {"$elemMatch": {"_id": ObjectId(to_id)}}}):
+                client.auth.profile.update({"_id": ObjectId(request.user_id)}, {
+                    "$push": {
+                        "following": to_user,
+                    },
+                    "$inc": {
+                        "following_count": 1
+                    }
+                }, upsert=False, multi=True)
 
-            client.auth.profile.update_one({"_id": ObjectId(to_user)}, {
-                "$push": {
-                    "follower": from_user,
-                },
-                "$inc": {
-                    "follower_count": 1
-                }
-            })
+            if not client.auth.profile.find_one({"_id": ObjectId(to_id),"follower": {"$elemMatch": {"_id": ObjectId(request.user_id)}}}):
+                client.auth.profile.update({"_id": ObjectId(to_id)}, {
+                    "$push": {
+                        "follower": from_user,
+                    },
+                    "$inc": {
+                        "follower_count": 1
+                    }
+                }, upsert=False, multi=True)
 
             return JSONResponse(content={
                 "message": "User Followed",
                 "status": True,
-                "data": convert_to_json(to_user)
+                "data": await convert_to_json(to_user)
             }, status_code=200)
 
         return JSONResponse(content={
@@ -120,30 +125,30 @@ class Follower(HTTPEndpoint):
     @jwt_authentication
     async def delete(self, request):
         from_id = request.user_id
-        to_id = request.json().get("id")
+        to_id = (await request.json()).get("id")
 
         with Connect() as client:
-            client.auth.profile.update_one({"_id": ObjectId(from_id)}, {
+            client.auth.profile.update({"_id": ObjectId(to_id)}, {
                 "$pull": {
                     "follower": {
-                        "_id": ObjectId(to_id)
-                    },
-                    "$inc": {
-                        "follower_count": -1
+                        "_id": ObjectId(from_id)
                     }
+                },
+                "$inc": {
+                    "follower_count": -1
                 }
-            })
+            }, upsert=False, multi=True, )
 
-            client.auth.profile.update_one({"_id": ObjectId(to_id)}, {
+            client.auth.profile.update({"_id": ObjectId(from_id)}, {
                 "$pull": {
                     "following": {
-                        "_id": ObjectId(from_id)
+                        "_id": ObjectId(to_id)
                     }
                 },
                 "$inc": {
                     "following_count": -1
                 }
-            })
+            }, upsert=False, multi=True)
 
             return JSONResponse(content={
                 "message": "Unfollowed",
@@ -158,11 +163,11 @@ class Follower(HTTPEndpoint):
         
         
 class Followers(HTTPEndpoint):
-    
+
     @jwt_authentication
     async def get(self, request):
         with Connect() as client:
-            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"follower": True})
+            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"following": True})
 
         if not following:
             return JSONResponse(content={
@@ -173,6 +178,6 @@ class Followers(HTTPEndpoint):
         return JSONResponse(content={
             "message": "Following List",
             "status": True,
-            "data": await convert_to_json(following["following"])
+            "data": await atuple(amap(convert_to_json, following["following"]))
         }, status_code=200)
 

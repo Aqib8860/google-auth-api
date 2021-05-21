@@ -1,0 +1,25 @@
+GET http://localhost:8000/api/follower HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE2OTQ3MDIsImlkIjoiNjBhN2M3MjdkODU5MDkwMjI0ZmU0Y2M0IiwianRpIjoidDVSZEJ3b2RudzRhUnc3Y1lydloyZW9NZEJ0Z3NXVWZPUlBNSkIxN3Rwbz0ifQ.xlruwkvjegNmFXmqseSOVX_Sk13j8Ubwsf0hCVfwGME
+
+###
+# Get Users Following
+GET http://localhost:8000/api/following HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE2OTcxNzgsImlkIjoiNjBhN2QxMGY3ZWQ0YTYxZGNiZjAxNjAzIiwianRpIjoiRjJwZEg1SmtyMWRzUkRTMSs5WHA5alRoQlVBamFGY1dEYjZIRWtZRXR6ST0ifQ.50ahNrbXnbxiVvQGLfrGfwltzmPj0-vDXDZdsXvPVSo
+
+###
+# Follow User
+POST http://localhost:8000/api/following HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE2OTcxNzgsImlkIjoiNjBhN2QxMGY3ZWQ0YTYxZGNiZjAxNjAzIiwianRpIjoiRjJwZEg1SmtyMWRzUkRTMSs5WHA5alRoQlVBamFGY1dEYjZIRWtZRXR6ST0ifQ.50ahNrbXnbxiVvQGLfrGfwltzmPj0-vDXDZdsXvPVSo
+
+{
+    "id": "60a7ced5c45cdf274b95c415"
+}
+
+###
+# UnFollow User
+DELETE http://localhost:8000/api/following HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE2OTcxNzgsImlkIjoiNjBhN2QxMGY3ZWQ0YTYxZGNiZjAxNjAzIiwianRpIjoiRjJwZEg1SmtyMWRzUkRTMSs5WHA5alRoQlVBamFGY1dEYjZIRWtZRXR6ST0ifQ.50ahNrbXnbxiVvQGLfrGfwltzmPj0-vDXDZdsXvPVSo
+
+{
+    "id": "60a7ced5c45cdf274b95c415"
+}

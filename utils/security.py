@@ -120,3 +120,5 @@ def jwt_authentication(endpoint, *args, **kwargs):
 
     return inner
 
+
+
