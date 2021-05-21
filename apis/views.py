@@ -2,7 +2,7 @@ from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPEndpoint
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
-from utils.api_support import convert_to_json
+from utils.api_support import convert_to_json, check_request_data
 from utils.security import jwt_authentication
 
 from bson import ObjectId
@@ -18,6 +18,7 @@ class GoogleAuthEndpoint(HTTPEndpoint):
             "status": False
         })
 
+    @check_request_data(fields=["auth_token", ])
     async def post(self, request):
         request_body = await request.json()
         auth_token = request_body.get("auth_token")
@@ -36,8 +37,13 @@ class GoogleAuthEndpoint(HTTPEndpoint):
         return JSONResponse(content=mes, status_code=status[type_of_res])
 
 
-
-# Profile Endpoints
+####################################✅❌
+# Profile Endpoints ################
+####################################
+# Available Endpints are: ##########
+#### - Get Public Profile ########## ❌
+#### - Get Profile Media ########### ❌
+####################################
 
 class Profile(HTTPEndpoint):
 
@@ -50,6 +56,16 @@ class Profile(HTTPEndpoint):
         obj = await convert_to_json(user_object)
         
         return JSONResponse(content=obj, status_code=200)
+
+
+
+#######################################
+# Follow APIs #########################
+#######################################
+# Available Endpints: #################
+#### - Following ###################### ✅
+######### - Get (Get Users Following) #
+#### - Get Followers ################## ✅
 
 
 # Follow APIs
@@ -81,6 +97,7 @@ class Following(HTTPEndpoint):
         }, status_code=200)
 
     @jwt_authentication
+    @check_request_data(fields=["id",])
     async def post(self, request):
         request_body = await request.json()
         to_id = request_body.get("id")
@@ -123,6 +140,7 @@ class Following(HTTPEndpoint):
         }, status_code=501)
 
     @jwt_authentication
+    @check_request_data(fields=["id",])
     async def delete(self, request):
         from_id = request.user_id
         to_id = (await request.json()).get("id")
