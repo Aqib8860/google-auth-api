@@ -1,5 +1,6 @@
 from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPEndpoint
+from starlette.requests import Request
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
@@ -52,6 +53,19 @@ class Profile(HTTPEndpoint):
         # import pdb; pdb.set_trace()
         with Connect() as client:
             user_object = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"password": False})
+
+        obj = await convert_to_json(user_object)
+        
+        return JSONResponse(content=obj, status_code=200)
+
+class PublicProfile(HTTPEndpoint):
+
+    @jwt_authentication
+    @check_request_data(fields=['id', ], req_type="query")
+    async def get(self, request: Request):
+        # import pdb; pdb.set_trace()
+        with Connect() as client:
+            user_object = client.auth.profile.find_one({"_id": ObjectId(request.query_params.get("id"))}, {"password": False})
 
         obj = await convert_to_json(user_object)
         
