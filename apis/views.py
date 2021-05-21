@@ -19,7 +19,7 @@ class GoogleAuthEndpoint(HTTPEndpoint):
             "status": False
         })
 
-    @check_request_data(fields=["auth_token", ])
+    @check_request_data(fields=["auth_token", ], )
     async def post(self, request):
         request_body = await request.json()
         auth_token = request_body.get("auth_token")
