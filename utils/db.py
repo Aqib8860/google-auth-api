@@ -17,5 +17,5 @@ class Connect():
         return self.client
     
     def __exit__(self, exc_type, exc_value, exc_tb):
-        traceback.print_exception(exc_type, exc_value, exc_tb)
+        traceback.extract_tb(exc_tb)
         self.client.close()

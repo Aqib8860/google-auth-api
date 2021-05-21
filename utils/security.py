@@ -107,15 +107,16 @@ def jwt_authentication(endpoint, *args, **kwargs):
             token = request.headers['authorization'].split(" ")[1]
 
             res, user_id = await verify_access_token(token)
-            if res:
-                request.user_id = user_id
-                return await endpoint(self, request, **kwargs)
 
         except Exception as e:
             return JSONResponse(content={
                 "message": str(e),
                 "status": False
             }, status_code=401)
+
+        if res:
+            request.user_id = user_id
+            return await endpoint(self, request, **kwargs)
 
     return inner
 

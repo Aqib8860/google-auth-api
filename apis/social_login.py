@@ -90,9 +90,13 @@ async def register_social_user(user_id, email, name, picture, provider):
             registered_user = await convert_to_json(registered_user)
 
             return {
-                'profile': registered_user,
+                "message": "Successfully Logged In",
+                "status": True,
                 'type': 'login',
-                "token": await generate_tokens(str(registered_user.get('id')))
+                "data": {
+                    'profile': registered_user,
+                    'token': await generate_tokens(str(registered_user.get("id")))
+                }
             }
 
         else:
@@ -110,28 +114,35 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'location': '',
                 'follower_count': 0,
                 'following_count': 0,
+                'follower': [],
+                'following': [],
                 'verified': False,
+                'profile_picture': ''
             }
 
         with Connect() as client:
-            user_id = client.auth.profile.insert_one(user)
+            result = client.auth.profile.insert_one(user)
 
         ts = int(time.time() * 1000)
 
         s3 = S3()
-        profile_picture_url = s3.upload_fileobj(f"user_files/{str(user_id.inserted_id)}/profile/picture{ts}.jpg", picture)
+        profile_picture_url = s3.upload_fileobj(f"user_files/{str(result.inserted_id)}/profile/picture{ts}.jpg", picture)
 
         with Connect() as client:
-            client.auth.profile.update_one({"_id": user_id.inserted_id}, {"$set": {"profile_picture": profile_picture_url}})
+            client.auth.profile.update_one({"_id": result.inserted_id}, {"$set": {"profile_picture": profile_picture_url}})
 
         res, registered_user = await authenticate(email=email, password=settings.SOCIAL.SOCIAL_SECRET, required_fields=required_fields)
 
         registered_user = await convert_to_json(registered_user)
 
         return {
-            'profile': registered_user,
+            "message": "Successfully Registered",
+            "status": True,
             'type': 'register',
-            'token': await generate_tokens(str(user_id.inserted_id))
+            "data": {
+                'profile': registered_user,
+                'token': await generate_tokens(str(result.inserted_id))
+            }
         }
 
 

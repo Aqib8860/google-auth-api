@@ -47,3 +47,132 @@ class Profile(HTTPEndpoint):
         obj = await convert_to_json(user_object)
         
         return JSONResponse(content=obj, status_code=200)
+
+
+# Follow APIs
+class Follower(HTTPEndpoint):
+
+    DATA_STORED = {
+        "_id": True,
+        "channel_name": True,
+        "name": True,
+        "email": True,
+        "profile_picture": True
+    }
+
+    @jwt_authentication
+    async def get(self, request):
+        with Connect() as client:
+            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"following": True})
+
+        if not following:
+            return JSONResponse(content={
+                "message": "User Doesnot Exists",
+                "status": False,
+            }, status_code=404)
+
+        return JSONResponse(content={
+            "message": "Following List",
+            "status": True,
+            "data": await convert_to_json(following["following"])
+        }, status_code=200)
+
+    @jwt_authentication
+    async def post(self, request):
+        request_body = request.json()
+        to_id = request_body.get("id")
+
+        with Connect() as client:
+            to_user = client.auth.profile.find_one({"_id": ObjectId(to_id)}, self.DATA_STORED)
+
+            from_user = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, self.DATA_STORED)
+
+
+            client.auth.profile.update_one({"_id": ObjectId(request.user_id)}, {
+                "$push": {
+                    "following": to_user,
+                },
+                "$inc": {
+                    "following_count": 1
+                }
+            })
+
+            client.auth.profile.update_one({"_id": ObjectId(to_user)}, {
+                "$push": {
+                    "follower": from_user,
+                },
+                "$inc": {
+                    "follower_count": 1
+                }
+            })
+
+            return JSONResponse(content={
+                "message": "User Followed",
+                "status": True,
+                "data": convert_to_json(to_user)
+            }, status_code=200)
+
+        return JSONResponse(content={
+            "message": "Database Error",
+            "status": False
+        }, status_code=501)
+
+    @jwt_authentication
+    async def delete(self, request):
+        from_id = request.user_id
+        to_id = request.json().get("id")
+
+        with Connect() as client:
+            client.auth.profile.update_one({"_id": ObjectId(from_id)}, {
+                "$pull": {
+                    "follower": {
+                        "_id": ObjectId(to_id)
+                    },
+                    "$inc": {
+                        "follower_count": -1
+                    }
+                }
+            })
+
+            client.auth.profile.update_one({"_id": ObjectId(to_id)}, {
+                "$pull": {
+                    "following": {
+                        "_id": ObjectId(from_id)
+                    }
+                },
+                "$inc": {
+                    "following_count": -1
+                }
+            })
+
+            return JSONResponse(content={
+                "message": "Unfollowed",
+                "status": True,
+                "data": to_id
+            }, status_code=200)
+        
+        return JSONResponse(content={
+                "message": "Database Error",
+                "status": False,
+            }, status_code=501)
+        
+        
+class Followers(HTTPEndpoint):
+    
+    @jwt_authentication
+    async def get(self, request):
+        with Connect() as client:
+            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"follower": True})
+
+        if not following:
+            return JSONResponse(content={
+                "message": "User Doesnot Exists",
+                "status": False,
+            }, status_code=404)
+
+        return JSONResponse(content={
+            "message": "Following List",
+            "status": True,
+            "data": await convert_to_json(following["following"])
+        }, status_code=200)
+

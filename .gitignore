@@ -22,7 +22,7 @@ pip-selfcheck.json
 __pycache__/
 *.py[cod]
 *$py.class
-
+temp
 # C extensions
 *.so
 
