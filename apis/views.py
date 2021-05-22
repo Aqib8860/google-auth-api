@@ -4,7 +4,7 @@ from starlette.requests import Request
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
-from utils.security import jwt_authentication
+from utils.security import jwt_authentication, refresh_to_access
 
 from bson import ObjectId
 
@@ -36,6 +36,31 @@ class GoogleAuthEndpoint(HTTPEndpoint):
             "failed": 401
         }
         return JSONResponse(content=mes, status_code=status[type_of_res])
+
+class RefreshToken(HTTPEndpoint):
+
+    @check_request_data(fields=["refresh", ])
+    async def post(self, request: Request):
+        refresh = (await request.json()).get("refresh")
+
+        try:
+            access = await refresh_to_access(refresh)
+        except Exception as e:
+            return JSONResponse(content={
+                "message": "Invalid Token",
+                "status": False
+            }, status_code=400)
+        
+        return JSONResponse(content={
+            "message": "Token Refreshed",
+            "status": True,
+            "data": {
+                "access": access
+            }
+        })
+
+
+
 
 
 ####################################✅❌

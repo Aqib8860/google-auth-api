@@ -80,6 +80,21 @@ async def generate_access_token(payload: dict):
     return jwt.encode(payload=payload, algorithm="HS256", key=SECURITY.JWT_SECRET_KEY)
 
 
+async def refresh_to_access(token):
+    pts = datetime.datetime.utcnow()
+    try:
+        payload = jwt.decode(token, algorithms=["HS256"], key=SECURITY.JWT_SECRET_KEY)
+        assert payload.get("typ")=="refresh"
+    except (jwt.exceptions.DecodeError, AssertionError) as e:
+        raise e
+    access_payload = {
+        "typ": "access",
+        "exp": pts + SECURITY.JWT_ACCESS_TOKEN_EXPIRY,
+        "id": payload.get("id"),
+        "jti": payload.get("jti")
+    }
+    return jwt.encode(payload=access_payload, algorithm="HS256", key=SECURITY.JWT_SECRET_KEY)
+
 async def verify_access_token(token):
     present_time = datetime.datetime.utcnow()
     try:
@@ -108,11 +123,18 @@ def jwt_authentication(endpoint, *args, **kwargs):
 
             res, user_id = await verify_access_token(token)
 
+        except jwt.exceptions.ExpiredSignatureError as e:
+            return JSONResponse(content={
+                "message": str(e),
+                "status": False
+            }, status_code=418)
+
         except Exception as e:
             return JSONResponse(content={
                 "message": str(e),
                 "status": False
             }, status_code=401)
+
 
         if res:
             request.user_id = user_id

@@ -22,17 +22,23 @@ def check_request_data(fields: list, req_type="json"):
     def outer(endpoint, *args, **kwargs):
         @functools.wraps(endpoint)
         async def inner(self, request, **kwargs):
-            if req_type == "data":
-                body = await request.form()
-            elif req_type == "json":
-                body = await request.json()
-            elif req_type == "query":
-                body = request.query_params
-            else:
+            try:
+                if req_type == "data":
+                    body = await request.form()
+                elif req_type == "json":
+                    body = await request.json()
+                elif req_type == "query":
+                    body = request.query_params
+                else:
+                    return JSONResponse(content={
+                            "message": f"Server Error",
+                            "status": False
+                        }, status_code=505)
+            except Exception as e:
                 return JSONResponse(content={
-                        "message": f"Server Error",
-                        "status": False
-                    }, status_code=505)
+                            "message": f"Bad request",
+                            "status": False
+                        }, status_code=505)
 
             for i in fields:
                 if i not in body:
