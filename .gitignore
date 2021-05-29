@@ -31,6 +31,7 @@ temp
 build/
 develop-eggs/
 dist/
+tests/
 downloads/
 eggs/
 .eggs/
