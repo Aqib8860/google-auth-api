@@ -65,8 +65,8 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'profile_picture': True,
                 'location': True,
                 'provider': True,
-                'following_count': True,
-                'follower_count': True,
+                'following': True,
+                'follower': True,
                 'profile_picture': True
             }
 
@@ -87,14 +87,22 @@ async def register_social_user(user_id, email, name, picture, provider):
                     "status": False
                 }
 
-            registered_user = await convert_to_json(registered_user)
+            followers = registered_user.pop('follower')
+            following = registered_user.pop('following')
+
+            obj = await convert_to_json(registered_user)
+
+            obj.update({
+                "follower_count": len(followers),
+                "following_count": len(following)
+            })
 
             return {
                 "message": "Successfully Logged In",
                 "status": True,
                 'type': 'login',
                 "data": {
-                    'profile': registered_user,
+                    'profile': obj,
                     'token': await generate_tokens(str(registered_user.get("id")))
                 }
             }
@@ -113,8 +121,6 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'provider': provider,
                 'bio': '',
                 'location': '',
-                'follower_count': 0,
-                'following_count': 0,
                 'follower': [],
                 'following': [],
                 'verified': False,
@@ -134,14 +140,22 @@ async def register_social_user(user_id, email, name, picture, provider):
 
         res, registered_user = await authenticate(email=email, password=settings.SOCIAL.SOCIAL_SECRET, required_fields=required_fields)
 
-        registered_user = await convert_to_json(registered_user)
+        followers = registered_user.pop('follower')
+        following = registered_user.pop('following')
+
+        obj = await convert_to_json(registered_user)
+
+        obj.update({
+            "follower_count": len(followers),
+            "following_count": len(following)
+        })
 
         return {
             "message": "Successfully Registered",
             "status": True,
             'type': 'register',
             "data": {
-                'profile': registered_user,
+                'profile': obj,
                 'token': await generate_tokens(str(result.inserted_id))
             }
         }
