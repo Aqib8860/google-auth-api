@@ -84,7 +84,8 @@ async def refresh_to_access(token):
     pts = datetime.datetime.utcnow()
     try:
         payload = jwt.decode(token, algorithms=["HS256"], key=SECURITY.JWT_SECRET_KEY)
-        assert payload.get("typ")=="refresh"
+        assert payload.get("typ") == "refresh"
+        assert payload.get("exp") <= pts
     except (jwt.exceptions.DecodeError, AssertionError) as e:
         raise e
     access_payload = {
@@ -118,7 +119,7 @@ def jwt_authentication(endpoint, *args, **kwargs):
     async def inner(self, request, **kwargs):
 
         try:
-            print(request.headers)
+            # print(request.headers)
             token = request.headers['authorization'].split(" ")[1]
 
             res, user_id = await verify_access_token(token)
@@ -129,6 +130,12 @@ def jwt_authentication(endpoint, *args, **kwargs):
                 "status": False
             }, status_code=418)
 
+        except jwt.exceptions.InvalidKeyError as e:
+            return JSONResponse(content={
+                "message": str(e),
+                "status": False
+            }, status_code=401)
+
         except Exception as e:
             return JSONResponse(content={
                 "message": str(e),
@@ -137,6 +144,51 @@ def jwt_authentication(endpoint, *args, **kwargs):
 
 
         if res:
+            request.user_id = user_id
+            return await endpoint(self, request, **kwargs)
+
+    return inner
+
+
+def loose_jwt_auth(endpoint, *args, **kwargs):
+
+    @functools.wraps(endpoint)
+    async def inner(self, request, **kwargs):
+
+        try:
+            # print(request.headers)
+
+            authorization = request.headers.get("authorization")
+
+            if not authorization:
+                request.is_authenticated = lambda: False
+                return await endpoint(self, request, **kwargs)
+
+            token = authorization.split(" ")[1]
+
+            res, user_id = await verify_access_token(token)
+
+        except jwt.exceptions.ExpiredSignatureError as e:
+            return JSONResponse(content={
+                "message": str(e),
+                "status": False
+            }, status_code=418)
+
+        except jwt.exceptions.InvalidKeyError as e:
+            return JSONResponse(content={
+                "message": str(e),
+                "status": False
+            }, status_code=401)
+
+        except Exception as e:
+            return JSONResponse(content={
+                "message": str(e),
+                "status": False
+            }, status_code=401)
+
+
+        if res:
+            request.is_authenticated = lambda: True
             request.user_id = user_id
             return await endpoint(self, request, **kwargs)
 

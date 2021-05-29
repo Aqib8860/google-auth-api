@@ -111,6 +111,7 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'channel_name': await generate_username(name), 
                 'name': name,
                 'provider': provider,
+                'bio': '',
                 'location': '',
                 'follower_count': 0,
                 'following_count': 0,
