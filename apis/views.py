@@ -142,9 +142,9 @@ class RefreshToken(HTTPEndpoint):
 
         try:
             access = await refresh_to_access(refresh)
-        except Exception:
+        except Exception as e:
             return JSONResponse(content={
-                "message": "Invalid Token",
+                "message": "Invalid Token - " + str(e),
                 "status": False
             }, status_code=400)
         
@@ -170,7 +170,7 @@ class RefreshToken(HTTPEndpoint):
 
 class Profile(HTTPEndpoint):
     fields = dict.fromkeys(['id', 'email', 'name', 'bio', 'channel_name', 'profile_picture',
-                  'location', 'provider', 'following_count', 'follower_count'], True)
+                  'location', 'provider', 'following', 'follower'], True)
 
     @jwt_authentication
     async def get(self, request):
@@ -178,7 +178,15 @@ class Profile(HTTPEndpoint):
         with Connect() as client:
             user_object = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, self.fields)
 
+        followers = user_object.pop('follower')
+        following = user_object.pop('following')
+
         obj = await convert_to_json(user_object)
+
+        obj.update({
+            "follower_count": len(followers),
+            "following_count": len(following)
+        })
         
         return JSONResponse(content={"data": obj, "status": True, "message": "Data Extracted"}, status_code=200)
 
@@ -361,13 +369,13 @@ class Following(HTTPEndpoint):
             client.auth.profile.find_one_and_update({"_id": ObjectId(to_id)}, {
                 "$pull": {
                     "follower": ObjectId(from_id)
-                },
+                }
             })
 
             client.auth.profile.find_one_and_update({"_id": ObjectId(from_id)}, {
                 "$pull": {
                     "following": ObjectId(to_id)
-                },
+                }
             })
 
             return JSONResponse(content={

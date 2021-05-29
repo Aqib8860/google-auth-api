@@ -84,9 +84,11 @@ async def refresh_to_access(token):
     pts = datetime.datetime.utcnow()
     try:
         payload = jwt.decode(token, algorithms=["HS256"], key=SECURITY.JWT_SECRET_KEY)
-        assert payload.get("typ") == "refresh"
-        assert payload.get("exp") <= pts
-    except (jwt.exceptions.DecodeError, AssertionError) as e:
+        assert (payload.get("typ") == "refresh"), "Not Refresh Token"
+        assert (pts.timestamp() < payload.get("exp")), "Refresh Token Expired"
+    except jwt.exceptions.DecodeError as e:
+        raise e
+    except AssertionError as e:
         raise e
     access_payload = {
         "typ": "access",
