@@ -395,19 +395,19 @@ class Followers(HTTPEndpoint):
     @jwt_authentication
     async def get(self, request):
         with Connect() as client:
-            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"following": True})
-            users_following = client.auth.profile.find({"_id": {"$in": following.get('following')}}, Following.DATA_STORED)
+            follower = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"follower": True})
+            users_follower = client.auth.profile.find({"_id": {"$in": follower.get('follower')}}, Following.DATA_STORED)
 
-        if not following:
+        if not follower:
             return JSONResponse(content={
                 "message": "User Doesnot Exists",
                 "status": False,
             }, status_code=404)
 
         return JSONResponse(content={
-            "message": "Following List",
+            "message": "Followers List",
             "status": True,
-            "data": await atuple(amap(convert_to_json, users_following))
+            "data": await atuple(amap(convert_to_json, users_follower))
         }, status_code=200)
 
 def schema_gen(request):
