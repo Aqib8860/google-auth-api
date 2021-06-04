@@ -1,0 +1,17 @@
+{
+  "user": {
+    "id": 1,
+    "username": "something",
+    "email": "email@email.com"
+  },
+  "name": "John Doe",
+
+  "videos": [
+    {
+    "title": "hello",
+      "story": false
+    }],
+  "stories": [
+
+  ]
+}

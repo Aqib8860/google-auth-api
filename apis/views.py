@@ -176,7 +176,7 @@ class Profile(HTTPEndpoint):
     async def get(self, request):
         # import pdb; pdb.set_trace()
         with Connect() as client:
-            user_object = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, self.fields)
+            user_object = client.auth.profile.find_one({"_id": request.user_id}, self.fields)
 
         followers = user_object.pop('follower')
         following = user_object.pop('following')
@@ -265,7 +265,7 @@ class PublicProfile(HTTPEndpoint):
     async def get(self, request: Request):
         # import pdb; pdb.set_trace()
         with Connect() as client:
-            user_object = client.auth.profile.find_one({"_id": ObjectId(request.query_params.get("id"))}, self.fields)
+            user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")}, self.fields)
         
 
         followers = user_object.pop('follower')
@@ -310,7 +310,7 @@ class Following(HTTPEndpoint):
     @jwt_authentication
     async def get(self, request):
         with Connect() as client:
-            following = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"following": True})
+            following = client.auth.profile.find_one({"_id": request.user_id}, {"following": True})
             users_following = client.auth.profile.find({"_id": {"$in": following.get('following')}}, self.DATA_STORED)
 
         if not following:
@@ -333,18 +333,18 @@ class Following(HTTPEndpoint):
 
         with Connect() as client:
 
-            if not client.auth.profile.find_one({"_id": ObjectId(request.user_id),"following": ObjectId(to_id)}):
-                client.auth.profile.update({"_id": ObjectId(request.user_id)}, {
+            if not client.auth.profile.find_one({"_id": request.user_id,"following": to_id}):
+                client.auth.profile.update({"_id": request.user_id}, {
                     "$push": {
                         "following": ObjectId(to_id)
                     },
 
                 }, upsert=False, multi=True)
 
-            if not client.auth.profile.find_one({"_id": ObjectId(to_id),"follower": ObjectId(request.user_id)}):
-                client.auth.profile.update({"_id": ObjectId(to_id)}, {
+            if not client.auth.profile.find_one({"_id": to_id,"follower": request.user_id}):
+                client.auth.profile.update({"_id": to_id}, {
                     "$push": {
-                        "follower": ObjectId(request.user_id)
+                        "follower": request.user_id
                     },
 
                 }, upsert=False, multi=True)
@@ -366,15 +366,15 @@ class Following(HTTPEndpoint):
         to_id = (await request.json()).get("id")
 
         with Connect() as client:
-            client.auth.profile.find_one_and_update({"_id": ObjectId(to_id)}, {
+            client.auth.profile.find_one_and_update({"_id": to_id}, {
                 "$pull": {
-                    "follower": ObjectId(from_id)
+                    "follower": from_id
                 }
             })
 
-            client.auth.profile.find_one_and_update({"_id": ObjectId(from_id)}, {
+            client.auth.profile.find_one_and_update({"_id": from_id}, {
                 "$pull": {
-                    "following": ObjectId(to_id)
+                    "following": to_id
                 }
             })
 
@@ -395,7 +395,7 @@ class Followers(HTTPEndpoint):
     @jwt_authentication
     async def get(self, request):
         with Connect() as client:
-            follower = client.auth.profile.find_one({"_id": ObjectId(request.user_id)}, {"follower": True})
+            follower = client.auth.profile.find_one({"_id": request.user_id}, {"follower": True})
             users_follower = client.auth.profile.find({"_id": {"$in": follower.get('follower')}}, Following.DATA_STORED)
 
         if not follower:

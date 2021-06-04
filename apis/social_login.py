@@ -14,7 +14,7 @@ from .exceptions import AuthenticationError
 
 from utils.db import Connect
 from utils.security import authenticate, generate_tokens, hash_password
-from utils.api_support import convert_to_json
+from utils.api_support import convert_to_json, generate_user_id
 from utils.s3 import S3
 
 from bson import ObjectId
@@ -117,6 +117,7 @@ async def register_social_user(user_id, email, name, picture, provider):
 
     else:
         user = {
+                '_id': await generate_user_id(),
                 'email': email,
                 'password': await hash_password(settings.SOCIAL.SOCIAL_SECRET),
                 'channel_name': await generate_username(name), 

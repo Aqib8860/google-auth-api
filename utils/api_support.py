@@ -3,7 +3,9 @@ from json import loads
 import json
 import functools
 from starlette.responses import JSONResponse
-
+import traceback
+import datetime
+import random
 
 async def convert_to_json(obj) -> dict:
     obj['id'] = str(obj.pop("_id"))
@@ -34,7 +36,7 @@ def check_request_data(fields: list, req_type="json"):
                         }, status_code=505)
             except Exception as e:
                 return JSONResponse(content={
-                            "message": f"Bad request",
+                            "message": f"Bad request for {str(e)}",
                             "status": False
                         }, status_code=505)
 
@@ -54,8 +56,34 @@ def check_request_data(fields: list, req_type="json"):
 
 class LastIds():
     def __init__(self, filename="./utils/last_ids.json"):
+        self.filename = filename
         with open(filename, "r") as fp:
-            self.ids = json.load(fp)
+            self.ids: dict = json.load(fp)
 
-    def get(self, _k=None):
-        pass
+    def get(self, _k: str):
+        return self.ids[_k] 
+
+    def inc(self, _k):
+        if self.ids.get(_k):
+            self.ids.update({_k: self.ids.get(_k) + 1})
+        else:
+            raise KeyError
+
+    def save(self):
+        with open(self.filename, 'w') as fp:
+            json.dump(self.ids, fp)
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        traceback.extract_tb(exc_tb)
+        self.save()
+
+async def generate_user_id():
+    ts = datetime.datetime.utcnow().timestamp()
+    with LastIds() as lids:
+        end = lids.get("profile")
+        lids.inc("profile")
+    user_id = "{}{:08d}{:010d}".format("ID", int((ts * 10**8) // random.randint(1000, 10**8)) % 10**8, end)
+    return user_id
