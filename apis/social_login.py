@@ -52,6 +52,9 @@ async def generate_username(name):
         random_username = username + str(random.randint(0, 1000))
         return await generate_username(random_username)
 
+async def generate_id():
+    with Connect() as client:
+        client.auth.last_ids.find_one()
 
 
 
@@ -103,7 +106,7 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'type': 'login',
                 "data": {
                     'profile': obj,
-                    'token': await generate_tokens(str(registered_user.get("id")))
+                    'token': await generate_tokens(str(obj.get("id")))
                 }
             }
 

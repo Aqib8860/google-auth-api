@@ -1,15 +1,13 @@
-from bson.json_util import dumps, loads
+from bson.json_util import dumps
 from json import loads
+import json
 import functools
 from starlette.responses import JSONResponse
 
 
 async def convert_to_json(obj) -> dict:
+    obj['id'] = str(obj.pop("_id"))
     data = loads(dumps(obj))
-    if data.get("_id"):
-        data['id'] = data["_id"]["$oid"]
-        del data['_id']
-
     return dict(data)
 
 def check_request_data(fields: list, req_type="json"):
@@ -52,3 +50,12 @@ def check_request_data(fields: list, req_type="json"):
         
         return inner
     return outer
+
+
+class LastIds():
+    def __init__(self, filename="./utils/last_ids.json"):
+        with open(filename, "r") as fp:
+            self.ids = json.load(fp)
+
+    def get(self, _k=None):
+        pass
