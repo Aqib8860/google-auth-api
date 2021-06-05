@@ -336,7 +336,7 @@ class Following(HTTPEndpoint):
             if not client.auth.profile.find_one({"_id": request.user_id,"following": to_id}):
                 client.auth.profile.update({"_id": request.user_id}, {
                     "$push": {
-                        "following": ObjectId(to_id)
+                        "following": to_id
                     },
 
                 }, upsert=False, multi=True)
