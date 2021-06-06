@@ -8,7 +8,6 @@ from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
 from utils.security import jwt_authentication, refresh_to_access, loose_jwt_auth
 
-
 from asyncstdlib.builtins import map as amap
 from asyncstdlib.builtins import tuple as atuple
 from starlette.requests import Request
@@ -334,7 +333,7 @@ class Following(HTTPEndpoint):
 
         with Connect() as client:
 
-            if not client.auth.profile.find_one({"_id": request.user_id,"following": to_id}):
+            if not client.auth.profile.find_one({"_id": request.user_id, "following": { "$in": [to_id] }}):
                 client.auth.profile.update({"_id": request.user_id}, {
                     "$push": {
                         "following": to_id
@@ -342,12 +341,11 @@ class Following(HTTPEndpoint):
 
                 }, upsert=False, multi=True)
 
-            if not client.auth.profile.find_one({"_id": to_id,"follower": request.user_id}):
+            if not client.auth.profile.find_one({"_id": to_id,"follower": { "$in": [ request.user_id ] }}):
                 client.auth.profile.update({"_id": to_id}, {
                     "$push": {
                         "follower": request.user_id
                     },
-
                 }, upsert=False, multi=True)
 
             return JSONResponse(content={
