@@ -266,6 +266,8 @@ class PublicProfile(HTTPEndpoint):
         # import pdb; pdb.set_trace()
         with Connect() as client:
             user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")}, self.fields)
+
+        
         
 
         followers = user_object.pop('follower')
@@ -280,7 +282,7 @@ class PublicProfile(HTTPEndpoint):
 
         if request.is_authenticated():
             obj.update({
-                "is_following": True if ObjectId(request.user_id) in followers else False
+                "is_following": True if request.user_id in followers else False
             })
                 
         return JSONResponse(content={"data": obj, "message": "Data Extracted", "status": True}, status_code=200)
