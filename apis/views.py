@@ -8,7 +8,6 @@ from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
 from utils.security import jwt_authentication, refresh_to_access, loose_jwt_auth
 
-from bson import ObjectId
 
 from asyncstdlib.builtins import map as amap
 from asyncstdlib.builtins import tuple as atuple
@@ -240,7 +239,7 @@ class Profile(HTTPEndpoint):
 
         if update_dict:
             with Connect() as client:
-                client.auth.profile.update_one({"_id": ObjectId(request.user_id)}, {"$set": update_dict})
+                client.auth.profile.update_one({"_id": request.user_id}, {"$set": update_dict})
         else:
             return JSONResponse(content={"status": False, "message": "Not updated"}, status_code=400)
 
@@ -250,7 +249,7 @@ class Profile(HTTPEndpoint):
     @jwt_authentication
     async def delete(self, request):
         with Connect() as client:
-            client.auth.profile.delete_one({"_id": ObjectId(request.user_id)})
+            client.auth.profile.delete_one({"_id": request.user_id})
 
         return JSONResponse(content={"message": "Deleted User", "status": True}, status_code=200)       
 
