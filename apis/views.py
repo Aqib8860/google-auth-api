@@ -193,7 +193,7 @@ class Profile(HTTPEndpoint):
     async def post(self, request):
         data = await request.json()
 
-        channel_name = data.get("channel_name")
+        channel_name = data.get("channel_name").strip()
 
         if not channel_name:
             return JSONResponse(content={
@@ -220,10 +220,23 @@ class Profile(HTTPEndpoint):
 
         update_dict = {}
 
-        if request_data.get("bio"):
-            update_dict.update({"bio": request_data.get("bio")})
-        if request_data.get("channel_name"):
-            update_dict.update({"channel_name": request_data.get("channel_name")})
+        def check_and_update_text_data(keys: list):
+            updates = {}
+            for key in keys:
+                if request_data.get(key):
+                    updates.update({key: request_data.get(key).strip()})
+            return updates
+
+        update_dict.update(check_and_update_text_data(["bio", "channel_name", "name", "location"]))
+
+        # if request_data.get("bio"):
+        #     update_dict.update({"bio": request_data.get("bio").strip()})
+        # if request_data.get("channel_name"):
+        #     update_dict.update({"channel_name": request_data.get("channel_name").strip()})
+        # if request_data.get("name"):
+        #     update_dict.update({"name": request_data.get("name").strip()})
+        # if request_data.get("location"):
+        #     update_dict.update({"location": request_data.get("location").strip()})
         
         pp = request_data.get("profile_picture")
         ts = int(datetime.datetime.utcnow().timestamp())
