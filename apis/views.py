@@ -229,6 +229,8 @@ class Profile(HTTPEndpoint):
 
         update_dict.update(check_and_update_text_data(["bio", "channel_name", "name", "location"]))
 
+        print(update_dict)
+
         # if request_data.get("bio"):
         #     update_dict.update({"bio": request_data.get("bio").strip()})
         # if request_data.get("channel_name"):
