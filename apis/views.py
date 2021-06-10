@@ -13,6 +13,7 @@ from asyncstdlib.builtins import tuple as atuple
 from starlette.requests import Request
 from starlette.datastructures import UploadFile, FormData
 from tempfile import NamedTemporaryFile
+import requests
 
 from utils.s3 import S3
 import datetime
@@ -362,6 +363,8 @@ class Following(HTTPEndpoint):
                         "follower": request.user_id
                     },
                 }, upsert=False, multi=True)
+            from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id})["channel_name"]
+            requests.get(f"http://52.91.187.209:8000/notification/{to_id}/{from_id_channel_name} followed you")
 
             return JSONResponse(content={
                 "message": "User Followed",
