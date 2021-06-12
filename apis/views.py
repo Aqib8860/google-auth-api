@@ -271,7 +271,7 @@ class Profile(HTTPEndpoint):
         
 
 class PublicProfile(HTTPEndpoint):
-    fields = dict.fromkeys(['id', 'email', 'name', 'bio', 'channel_name', 'profile_picture',
+    fields = dict.fromkeys(['_id', 'email', 'name', 'bio', 'channel_name', 'profile_picture',
                   'location', 'provider', 'follower', 'following'], True)
     
     @loose_jwt_auth
@@ -300,6 +300,31 @@ class PublicProfile(HTTPEndpoint):
             })
                 
         return JSONResponse(content={"data": obj, "message": "Data Extracted", "status": True}, status_code=200)
+
+
+class PublicProfileMedia(HTTPEndpoint):
+    fields = dict.fromkeys(['_id'], True)
+    
+    @check_request_data(fields=['id', ], req_type="query")
+    async def get(self, request: Request):
+        # import pdb; pdb.set_trace()
+        with Connect() as client:
+            user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")}, self.fields)
+            if not user_object:
+                return JSONResponse(content={"message": "User not found", "status": False}, status_code=404)
+
+            id = user_object.get("_id")
+
+            videos = client.videos.upload.find({"profile_id": id})
+            stories = client.stories.upload.find({"profile_id": id})
+
+            obj = {
+                "videos": list(videos),
+                "stories": list(stories)
+            }
+
+                
+        return JSONResponse(content={"data": obj, "message": "Media Extracted for " + id, "status": True}, status_code=200)
 
 
 
@@ -363,7 +388,7 @@ class Following(HTTPEndpoint):
                         "follower": request.user_id
                     },
                 }, upsert=False, multi=True)
-            from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id})["channel_name"]
+            from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id}, {"channel_name": True})["channel_name"]
             requests.get(f"http://52.91.187.209:8000/notification/{to_id}/{from_id_channel_name} followed you")
 
             return JSONResponse(content={
