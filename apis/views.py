@@ -29,6 +29,18 @@ schemas = SchemaGenerator(
     }
 )
 
+
+
+schemas = SchemaGenerator(
+    {
+        "openapi": "3.0.0", 
+        "info": {
+            "title": "Authentication APIs", 
+            "version": "1.0"
+        }
+    }
+)
+
 # Authentication endpoints
 class GoogleAuthEndpoint(HTTPEndpoint):
     async def get(self, request):
@@ -141,7 +153,7 @@ class RefreshToken(HTTPEndpoint):
 
         try:
             access = await refresh_to_access(refresh)
-        except Exception as e:
+        except Exception:
             return JSONResponse(content={
                 "message": "Invalid Token - " + str(e),
                 "status": False
