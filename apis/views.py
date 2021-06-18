@@ -401,7 +401,7 @@ class Following(HTTPEndpoint):
                     },
                 }, upsert=False, multi=True)
             from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id}, {"channel_name": True})["channel_name"]
-            requests.get(f"http://52.91.187.209:8000/notification/{to_id}/{from_id_channel_name} followed you")
+            requests.get(f"https://myworld-notification.herokuapp.com/notification/{to_id}/{from_id_channel_name} followed you")
 
             return JSONResponse(content={
                 "message": "User Followed",
