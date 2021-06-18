@@ -1,6 +1,8 @@
 from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
+from starlette.schemas import SchemaGenerator
+
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
@@ -10,6 +12,18 @@ from bson import ObjectId
 
 from asyncstdlib.builtins import map as amap
 from asyncstdlib.builtins import tuple as atuple
+
+
+
+schemas = SchemaGenerator(
+    {
+        "openapi": "3.0.0", 
+        "info": {
+            "title": "Authentication APIs", 
+            "version": "1.0"
+        }
+    }
+)
 
 # Authentication endpoints
 class GoogleAuthEndpoint(HTTPEndpoint):
@@ -21,6 +35,64 @@ class GoogleAuthEndpoint(HTTPEndpoint):
 
     @check_request_data(fields=["auth_token", ], )
     async def post(self, request):
+        """
+        responses:
+            200:
+                description: Successful Login Response
+                examples:
+                    {
+                        "message": "Successfully Logged In",
+                        "status": true,
+                        "data": {
+                            "profile": {
+                                "email": "john.doe@example.com",
+                                "channel_name": "johndoe",
+                                "name": "John Doe",
+                                "provider": "google",
+                                "location": "",
+                                "follower_count": 1,
+                                "following_count": 0,
+                                "profile_picture": "https://myworld2021.s3.amazonaws.com/user_files/60a7ced5c45cdf274b95c415/profile/picture1621610200253.jpg",
+                                "id": "60a7ced5c45cdf274b95c415"
+                            },
+                            "token": {
+                                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJyZWZyZXNoIiwiZXhwIjoxNjIxOTIzNDA0LCJpYXQiOjE2MjE2NjQyMDQsImlkIjoiNjBhN2NlZDVjNDVjZGYyNzRiOTVjNDE1IiwianRpIjoibFh4a2tJaEJWSGgwT1N5WGd4dEZhS2cvNWJKbVVnQWVQL1ZGV1UxTm0xST0ifQ.Qv8hC5TCqJDfF5oAr6aGrRV2Z-wJrkmX8xB5nCECAsY",
+                                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE3NTA2MDQsImlkIjoiNjBhN2NlZDVjNDVjZGYyNzRiOTVjNDE1IiwianRpIjoibFh4a2tJaEJWSGgwT1N5WGd4dEZhS2cvNWJKbVVnQWVQL1ZGV1UxTm0xST0ifQ.7wuincHFtFCNaAOuHSTxCkxZuHs1z07PdYDesIlkbvU"
+                            }
+                        }
+                    }
+            201:
+                description: Successful Registration Response
+                examples:
+                    {
+                        "message": "Successfully Registered",
+                        "status": true,
+                        "data": {
+                            "profile": {
+                                "email": "john.doe@example.com",
+                                "channel_name": "johndoe",
+                                "name": "John Doe",
+                                "provider": "google",
+                                "location": "",
+                                "follower_count": 1,
+                                "following_count": 0,
+                                "profile_picture": "https://myworld2021.s3.amazonaws.com/user_files/60a7ced5c45cdf274b95c415/profile/picture1621610200253.jpg",
+                                "id": "60a7ced5c45cdf274b95c415"
+                            },
+                            "token": {
+                                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJyZWZyZXNoIiwiZXhwIjoxNjIxOTIzNDA0LCJpYXQiOjE2MjE2NjQyMDQsImlkIjoiNjBhN2NlZDVjNDVjZGYyNzRiOTVjNDE1IiwianRpIjoibFh4a2tJaEJWSGgwT1N5WGd4dEZhS2cvNWJKbVVnQWVQL1ZGV1UxTm0xST0ifQ.Qv8hC5TCqJDfF5oAr6aGrRV2Z-wJrkmX8xB5nCECAsY",
+                                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE3NTA2MDQsImlkIjoiNjBhN2NlZDVjNDVjZGYyNzRiOTVjNDE1IiwianRpIjoibFh4a2tJaEJWSGgwT1N5WGd4dEZhS2cvNWJKbVVnQWVQL1ZGV1UxTm0xST0ifQ.7wuincHFtFCNaAOuHSTxCkxZuHs1z07PdYDesIlkbvU"
+                            }
+                        }
+                    }
+            400:
+                description: Login or Registration Failed
+                examples:
+                    {
+                        "message": "The id_token is invalid or expired. Please login again.",
+                        "status": false
+                    }
+        """
         request_body = await request.json()
         auth_token = request_body.get("auth_token")
         data_class = GoogleSocialAuthDataClass(auth_token=auth_token)
@@ -41,11 +113,31 @@ class RefreshToken(HTTPEndpoint):
 
     @check_request_data(fields=["refresh", ])
     async def post(self, request: Request):
+        """
+        responses:
+            200:
+                description: Refreshed Token
+                examples:
+                    {
+                        "message": "Token Refreshed",
+                        "status": true,
+                        "data": {
+                            "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MiLCJleHAiOjE2MjE3NTEyNjAsImlkIjoiNjBhN2NlZDVjNDVjZGYyNzRiOTVjNDE1IiwianRpIjoiY0ZGWGxPdVdHcWdCd080ckZaeitHSlduS3g3MGlIQ3B4ZkhHNjlKdHhBMD0ifQ.SFJg5FvbmFgL3d0LnCKNubu_YIY9wjyD24_ZiYd0BXM"
+                        }
+                    }
+            400:
+                description: Login or Registration Failed
+                examples:
+                    {
+                        "message": "Error Message",
+                        "status": false
+                    }
+        """
         refresh = (await request.json()).get("refresh")
 
         try:
             access = await refresh_to_access(refresh)
-        except Exception as e:
+        except Exception:
             return JSONResponse(content={
                 "message": "Invalid Token",
                 "status": False
@@ -82,6 +174,33 @@ class Profile(HTTPEndpoint):
         obj = await convert_to_json(user_object)
         
         return JSONResponse(content=obj, status_code=200)
+
+    async def post(self, request):
+        data = await request.json()
+        channel_name = data.get("channel_name")
+
+        if not channel_name:
+            return JSONResponse(content={
+                "message": "Key Channel Name Required",
+                "status": False
+            }, status_code=400)
+
+        with Connect() as client:
+            existing_user = client.auth.profile.find_one({"channel_name": channel_name}, {"channel_name": True})
+            if existing_user:
+                return JSONResponse(content={
+                    "message": "Channel Name Exists",
+                    "status": False
+                }, status_code=302)
+
+        return JSONResponse(content={
+                "message": "Channel Name Accepted",
+                "status": True
+            }, status_code=202)
+
+    async def put(self, request):
+        user_id = request.user_id
+        data = request.json()
 
 class PublicProfile(HTTPEndpoint):
 
@@ -238,3 +357,5 @@ class Followers(HTTPEndpoint):
             "data": await atuple(amap(convert_to_json, following["following"]))
         }, status_code=200)
 
+def schema_gen(request):
+    return schemas.OpenAPIResponse(request=request)
