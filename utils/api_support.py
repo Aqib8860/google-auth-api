@@ -35,6 +35,7 @@ def check_request_data(fields: list, req_type="json"):
                             "status": False
                         }, status_code=505)
             except Exception as e:
+                raise e
                 return JSONResponse(content={
                             "message": f"Bad request for {str(e)}",
                             "status": False

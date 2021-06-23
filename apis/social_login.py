@@ -73,9 +73,15 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'profile_picture': True
             }
 
-
-    with Connect() as client:
-        filtered_user_by_email = client.auth.profile.find_one({"email": email}, {"_id": True, 'provider': True})
+    try:
+        with Connect() as client:
+            filtered_user_by_email = client.auth.profile.find_one({"email": email}, {"_id": True, 'provider': True})
+    except Exception as e:
+        print(e.__dict__)
+        print(e.__class__)
+        print(e.__module__)
+        print(e.with_traceback())
+        raise e
 
     if filtered_user_by_email:
 

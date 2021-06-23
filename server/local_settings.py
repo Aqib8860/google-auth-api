@@ -3,16 +3,17 @@ import datetime
 class DBInfo(object):
     MONGO_USER = "myworld"
     MONGO_PASSWORD = "hgrhtAAeybVuuHCc"
-    MONGO_DB = "profile"
 
     @staticmethod
     def get_url():
-        return f"mongodb+srv://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@cluster0.jzv7p.mongodb.net/?retryWrites=true&w=majority"
+        # return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-06-21-08-18-34.cluster-cmmlvhwuwqnu.ap-south-1.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+        return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-06-22-07-54-11.cluster-cmmlvhwuwqnu.ap-south-1.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+
 
 class AWS:
-    ACCESS_KEY = 'AKIAUHZ3VLC5ZPVEAOXI'
-    SECRET_ACCESS_KEY = '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'
-    STORAGE_BUCKET_NAME = 'myworld2021'
+    ACCESS_KEY = 'AKIARET4LDLNAFC546LY'
+    SECRET_ACCESS_KEY = '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'
+    STORAGE_BUCKET_NAME = 'myworld-bucket'
     DEFAULT_ACL = 'public-read'
 
 class SERVER:
