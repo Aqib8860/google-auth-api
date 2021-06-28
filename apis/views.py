@@ -327,12 +327,14 @@ class PublicProfileMedia(HTTPEndpoint):
 
             id = user_object.get("_id")
 
-            videos = client.videos.upload.find({"profile_id": id})
-            stories = client.stories.upload.find({"profile_id": id})
+            videos = client.videos.upload.find({"profile._id": id})
+            stories = client.stories.upload.find({"profile._id": id})
+            rooms = client.myspace.rooms.find({"creator._id": id})
 
             obj = {
                 "videos": list(videos),
-                "stories": list(stories)
+                "stories": list(stories),
+                "rooms": list(rooms)
             }
 
                 
