@@ -2,7 +2,7 @@ from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.schemas import SchemaGenerator
-
+from server.settings import push_service
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
 from utils.api_support import convert_to_json, check_request_data
@@ -403,7 +403,8 @@ class Following(HTTPEndpoint):
                     },
                 }, upsert=False, multi=True)
             from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id}, {"channel_name": True})["channel_name"]
-            requests.get(f"http://13.235.67.71/notification/{to_id}/{from_id_channel_name} followed you")
+            reg_id=client.notifications.tokens.find_one({"profile":to_id})["token"]
+            push_service.notify_single_device(registration_id=reg_id, message_title="Myworld", message_body=f"{client.auth.profile.find_one({'_id': request.user_id})['channel_name']} followed you")
 
             return JSONResponse(content={
                 "message": "User Followed",

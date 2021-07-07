@@ -32,6 +32,8 @@ class SECURITY:
     JWT_ACCESS_TOKEN_EXPIRY = datetime.timedelta(days=1)
     JWT_REFRESH_TOKEN_EXPIRY = datetime.timedelta(days=3)
 
+class FCM:
+    API_KEY="AAAA06zBFVA:APA91bEzn2_SeZTRipMpqImpLc3otatgjRKfxj84W-oWuLCD7R7gYx8PR4PTfSiMjs08ddGvtB2S319QXzNDapVbGJEQNIdZdRc8XA3e6tZzAtcphM7YLuYe_nZgQIy487Xr0pJTC3Vj"
 
 class SOCIAL:
     GOOGLE_CLIENT_ID =  [
