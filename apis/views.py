@@ -2,10 +2,9 @@ from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.schemas import SchemaGenerator
-from server.settings import push_service
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
-from utils.api_support import convert_to_json, check_request_data
+from utils.api_support import convert_to_json, check_request_data, push_service
 from utils.security import jwt_authentication, refresh_to_access, loose_jwt_auth
 
 from asyncstdlib.builtins import map as amap

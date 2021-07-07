@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 import traceback
 import datetime
 import random
+from server.local_settings import FCM
 
 async def convert_to_json(obj) -> dict:
     obj['id'] = str(obj.pop("_id"))
@@ -88,3 +89,7 @@ async def generate_user_id():
         lids.inc("profile")
     user_id = "{}{:08d}{:010d}".format("ID", int((ts * 10**8) // random.randint(1000, 10**8)) % 10**8, end)
     return user_id
+
+from pyfcm import FCMNotification
+
+push_service = FCMNotification(api_key=FCM.API_KEY)
