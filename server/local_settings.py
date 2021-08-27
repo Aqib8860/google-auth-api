@@ -6,15 +6,11 @@ class DBInfo(object):
 
     @staticmethod
     def get_url():
-        #return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-06-21-08-18-34.cluster-cmmlvhwuwqnu.ap-south-1.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
-        #return f"mongodb+srv://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@cluster0.jzv7p.mongodb.net/myworld?authSource=admin&replicaSet=atlas-39hn0j-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true"
-        return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-06-22-07-54-11.cluster-cmmlvhwuwqnu.ap-south-1.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
-
-
-class AWS:
-    ACCESS_KEY = 'AKIARET4LDLNAFC546LY'
-    SECRET_ACCESS_KEY = '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'
-    STORAGE_BUCKET_NAME = 'myworld-bucket'
+        return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-08-26-17-00-10.cluster-cnx3ni4ekzmn.ap-south-1.docdb.amazonaws.com:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+# for testing  -->        return f"mongodb+srv://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@cluster0.jzv7p.mongodb.net/myworld?authSource=admin&replicaSet=atlas-39hn0j-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true"
+    ACCESS_KEY = 'AKIAWRTFIBNT2IPD7SUN'
+    SECRET_ACCESS_KEY = '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'
+    STORAGE_BUCKET_NAME = 'myworld-bucket-new'
     DEFAULT_ACL = 'public-read'
 
 class SERVER:
