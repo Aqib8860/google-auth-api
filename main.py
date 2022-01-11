@@ -1,3 +1,5 @@
+from starlette.applications import Starlette
+from server.urls import urlpatterns
 import uvicorn
 import click
 from server.settings import SERVER
@@ -34,5 +36,7 @@ def test():
     print("DEBUG: No tests available")
     pass
 
+app = Starlette(routes=urlpatterns)
 if __name__=="__main__":
-    args()
+    # args()
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info")

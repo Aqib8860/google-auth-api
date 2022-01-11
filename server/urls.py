@@ -5,7 +5,7 @@ from .views import hello
 from apis.urls import routes as api_routes
 from websocket.routes import routes as ws_routes
 
-routes = [
+urlpatterns = [
     Route('/', hello),
     # Mount('/', app=StaticFiles(directory="static"), name='static'),
     Mount('/api', routes=api_routes),

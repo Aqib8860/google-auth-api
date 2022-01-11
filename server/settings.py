@@ -7,7 +7,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import HTMLResponse
 
-from server.urls import routes
+#from server.urls import routes
 from .websocket import Groups
 import traceback
 
@@ -20,7 +20,7 @@ MIDDLEWARE = [
 
 
 
-app = Starlette(routes=routes, debug=SERVER.DEBUG, middleware=MIDDLEWARE,)
+#app = Starlette(routes=routes, debug=SERVER.DEBUG, middleware=MIDDLEWARE,)
 
 groups = Groups()
 

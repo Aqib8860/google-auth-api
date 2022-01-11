@@ -4,7 +4,7 @@ from starlette.requests import Request
 from starlette.schemas import SchemaGenerator
 from .social_login import GoogleSocialAuthDataClass
 from utils.db import Connect
-from utils.api_support import convert_to_json, check_request_data, push_service
+from utils.api_support import convert_to_json, check_request_data
 from utils.security import jwt_authentication, refresh_to_access, loose_jwt_auth
 
 from asyncstdlib.builtins import map as amap
@@ -179,7 +179,7 @@ class RefreshToken(HTTPEndpoint):
 ####################################
 
 class Profile(HTTPEndpoint):
-    fields = dict.fromkeys(['id', 'email', 'name', 'bio', 'channel_name', 'profile_picture',
+    fields = dict.fromkeys(['id', 'email', 'name', 'bio', 'web_address', 'channel_name', 'area_of_expert', 'profile_picture',
                   'location', 'provider', 'following', 'follower'], True)
 
     @jwt_authentication
@@ -239,7 +239,7 @@ class Profile(HTTPEndpoint):
                     updates.update({key: request_data.get(key).strip()})
             return updates
 
-        update_dict.update(check_and_update_text_data(["bio", "channel_name", "name", "location"]))
+        update_dict.update(check_and_update_text_data(["bio", "web_address", "channel_name", "area_of_expert", "name", "location"]))
 
         print(update_dict)
 
@@ -282,17 +282,15 @@ class Profile(HTTPEndpoint):
         
 
 class PublicProfile(HTTPEndpoint):
-    fields = dict.fromkeys(['_id', 'email', 'name', 'bio', 'channel_name', 'profile_picture',
+    fields = dict.fromkeys(['_id', 'email', 'name', 'bio', 'web_address','channel_name', 'area_of_expert','profile_picture','verified',
                   'location', 'provider', 'follower', 'following'], True)
     
-    @loose_jwt_auth
+    #@loose_jwt_auth
     @check_request_data(fields=['id', ], req_type="query")
     async def get(self, request: Request):
         # import pdb; pdb.set_trace()
         with Connect() as client:
             user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")}, self.fields)
-
-        
         
 
         followers = user_object.pop('follower')
@@ -305,47 +303,67 @@ class PublicProfile(HTTPEndpoint):
             "following_count": len(following)
         })
 
-        if request.is_authenticated():
+        """if request.is_authenticated():
             obj.update({
                 "is_following": True if request.user_id in followers else False
-            })
+            })"""
+            
                 
         return JSONResponse(content={"data": obj, "message": "Data Extracted", "status": True}, status_code=200)
 
 
 class PublicProfileMedia(HTTPEndpoint):
-    fields = dict.fromkeys(['_id'], True)
+    fields = dict.fromkeys(['_id'],True)
     
     @check_request_data(fields=['id', ], req_type="query")
     async def get(self, request: Request):
         # import pdb; pdb.set_trace()
         with Connect() as client:
-            user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")}, self.fields)
+            user_object = client.auth.profile.find_one({"_id": request.query_params.get("id")})
             if not user_object:
                 return JSONResponse(content={"message": "User not found", "status": False}, status_code=404)
 
             id = user_object.get("_id")
 
             videos = client.videos.upload.find({"profile._id": id})
-            video_details=[]
+            """video_details=[]
             for i in videos:
                 details=client.videos.upload.find_one({"_id":i["_id"]})
-                details["total_viewers"]=client.videos.views.find_one({"_id":{"$regex":i["_id"]}})["total_viewers"]
-                video_details.append(details)
+                #details["total_viewers"]=client.videos.views.find_one({"_id":{"$regex":i["_id"]}})
+                video_details.append(details)"""
 
-            stories = client.stories.upload.find({"profile_id": id})
+            #stories = client.stories.upload.find({"profile_id": id})
             rooms = client.myspace.rooms.find({"creator._id": id})
 
             obj = {
-                "videos": list(video_details),
-                "stories": list(stories),
+                "videos": list(videos),
+                #"stories": list(stories),
                 "rooms": list(rooms)
             }
 
                 
         return JSONResponse(content={"data": obj, "message": "Media Extracted for " + id, "status": True}, status_code=200)
 
+class PublicProfileMedia2(HTTPEndpoint):
+    fields = dict.fromkeys(['_id','email','name'])
 
+    @loose_jwt_auth
+    @check_request_data(fields=['id'], req_type="query")
+    async def get(self, request: Request):
+        with Connect() as client:
+            user_object = client.auth.profile.find_one(
+                {"_id":request.query_params.get("id")}
+            )
+            
+            if not user_object:
+                return JSONResponse(content={"message":"User not found", "status":False},status_code=404)
+
+            data = user_object.get("_id")
+            return JSONResponse(content={
+                "message":"Data",
+                "data":data,
+                "status":True
+            }, status_code=200)
 
 #######################################
 # Follow APIs #########################
@@ -367,10 +385,12 @@ class Following(HTTPEndpoint):
         "profile_picture": True
     }
 
-    @jwt_authentication
-    async def get(self, request):
+    #@jwt_authentication
+    #@loose_jwt_auth 
+    @check_request_data(fields=['id'], req_type="query")    
+    async def get(self, request: Request):
         with Connect() as client:
-            following = client.auth.profile.find_one({"_id": request.user_id}, {"following": True})
+            following = client.auth.profile.find_one({"_id": request.query_params.get("id")}, {"following": True})
             users_following = client.auth.profile.find({"_id": {"$in": following.get('following')}}, self.DATA_STORED)
 
         if not following:
@@ -401,16 +421,30 @@ class Following(HTTPEndpoint):
 
                 }, upsert=False, multi=True)
 
+
+            
             if not client.auth.profile.find_one({"_id": to_id,"follower": { "$in": [ request.user_id ] }}):
                 client.auth.profile.update({"_id": to_id}, {
                     "$push": {
-                        "follower": request.user_id
+                        "follower": request.user_id,
                     },
                 }, upsert=False, multi=True)
+
+                user_object = client.auth.profile.find_one({"_id":to_id}) 
+                followers = user_object.pop('follower')  
+                followers_count=len(followers)
+
+                if followers_count>999:
+                    client.auth.profile.update({"_id":to_id},{
+                        "$set": {
+                            "verified": True
+                        },
+                    },upsert=False, multi=True)
+            
             from_id_channel_name=client.auth.profile.find_one({"_id": request.user_id}, {"channel_name": True})["channel_name"]
             reg_id=client.notifications.tokens.find_one({"profile":to_id})["token"]
-            push_service.notify_single_device(registration_id=reg_id, message_title="Myworld", message_body=f"{client.auth.profile.find_one({'_id': request.user_id})['channel_name']} followed you")
-
+            #push_service.notify_single_device(registration_id=reg_id, message_title="Myworld", message_body=f"{client.auth.profile.find_one({'_id': request.user_id})['channel_name']} followed you")
+            
             return JSONResponse(content={
                 "message": "User Followed",
                 "status": True,
@@ -454,10 +488,12 @@ class Following(HTTPEndpoint):
         
 class Followers(HTTPEndpoint):
 
-    @jwt_authentication
-    async def get(self, request):
+    # @jwt_authentication
+    #@loose_jwt_auth 
+    @check_request_data(fields=['id'], req_type="query")
+    async def get(self, request:Request):
         with Connect() as client:
-            follower = client.auth.profile.find_one({"_id": request.user_id}, {"follower": True})
+            follower = client.auth.profile.find_one({"_id": request.query_params.get("id")}, {"follower": True})
             users_follower = client.auth.profile.find({"_id": {"$in": follower.get('follower')}}, Following.DATA_STORED)
 
         if not follower:

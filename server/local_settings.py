@@ -6,14 +6,27 @@ class DBInfo(object):
 
     @staticmethod
     def get_url():
-        return f"mongodb://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@docdb-2021-08-31-04-49-08.cluster-cnx3ni4ekzmn.ap-south-1.docdb.amazonaws.com:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+        return f"mongodb+srv://aiworld:i6TO1DZbtBzckOnx@mydb.xci1l.mongodb.net/mydb?retryWrites=true&w=majority"
         #return f"mongodb+srv://{DBInfo.MONGO_USER}:{DBInfo.MONGO_PASSWORD}@cluster0.jzv7p.mongodb.net/myworld?authSource=admin&replicaSet=atlas-39hn0j-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true"
-
+ 
 class AWS:
-    ACCESS_KEY = 'AKIAWRTFIBNT2IPD7SUN'
-    SECRET_ACCESS_KEY = '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'
-    STORAGE_BUCKET_NAME = 'myworld-bucket-new'
+    ACCESS_KEY = 'AKIASGPFZLBMQV5ACHCL'
+    SECRET_ACCESS_KEY = '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'
+    REGION_NAME = 'ap-south-1'
+
+    # AWS BUCKET
+    STORAGE_BUCKET_NAME = 'new-myworld-bucket'
     DEFAULT_ACL = 'public-read'
+
+    # AWS SNS 
+    PLATFORM_APPLICATION = "arn:aws:sns:ap-south-1:151342635097:app/GCM/Cessini"
+
+class FIREBASE:
+    CERTIFICATE = 'firebase.json'
+    DATABASE_URL = 'https://myworld-311307-default-rtdb.asia-southeast1.firebasedatabase.app/'
+
+    
+    
 
 class SERVER:
     DEBUG = True
@@ -31,8 +44,9 @@ class SECURITY:
     JWT_ACCESS_TOKEN_EXPIRY = datetime.timedelta(days=1)
     JWT_REFRESH_TOKEN_EXPIRY = datetime.timedelta(days=3)
 
-class FCM:
-    API_KEY="AAAA06zBFVA:APA91bEzn2_SeZTRipMpqImpLc3otatgjRKfxj84W-oWuLCD7R7gYx8PR4PTfSiMjs08ddGvtB2S319QXzNDapVbGJEQNIdZdRc8XA3e6tZzAtcphM7YLuYe_nZgQIy487Xr0pJTC3Vj"
+#class FCM:
+    #API_KEY="AAAA06zBFVA:APA91bEzn2_SeZTRipMpqImpLc3otatgjRKfxj84W-oWuLCD7R7gYx8PR4PTfSiMjs08ddGvtB2S319QXzNDapVbGJEQNIdZdRc8XA3e6tZzAtcphM7YLuYe_nZgQIy487Xr0pJTC3Vj"
+
 
 class SOCIAL:
     GOOGLE_CLIENT_ID =  [

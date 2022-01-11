@@ -15,7 +15,7 @@ from .exceptions import AuthenticationError
 from utils.db import Connect
 from utils.security import authenticate, generate_tokens, hash_password
 from utils.api_support import convert_to_json, generate_user_id
-from utils.s3 import S3
+from utils.s3 import S3, SNS
 
 from bson import ObjectId
 
@@ -64,7 +64,9 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'email': True, 
                 'name': True, 
                 'bio': True, 
+                'web_address':True,
                 'channel_name': True,
+                'area_of_expert': True,
                 'profile_picture': True,
                 'location': True,
                 'provider': True,
@@ -99,6 +101,8 @@ async def register_social_user(user_id, email, name, picture, provider):
             followers = registered_user.pop('follower')
             following = registered_user.pop('following')
 
+            user_id = registered_user["_id"]
+
             obj = await convert_to_json(registered_user)
 
             obj.update({
@@ -106,6 +110,10 @@ async def register_social_user(user_id, email, name, picture, provider):
                 "following_count": len(following)
             })
 
+            sns = SNS()
+            user = user_id
+            res = sns.add_token(user)
+            
             return {
                 "message": "Successfully Logged In",
                 "status": True,
@@ -127,9 +135,11 @@ async def register_social_user(user_id, email, name, picture, provider):
                 'email': email,
                 'password': await hash_password(settings.SOCIAL.SOCIAL_SECRET),
                 'channel_name': await generate_username(name), 
+                'area_of_expert': '',
                 'name': name,
                 'provider': provider,
                 'bio': '',
+                'web_address': '',
                 'location': '',
                 'follower': [],
                 'following': [],
@@ -145,6 +155,10 @@ async def register_social_user(user_id, email, name, picture, provider):
         s3 = S3()
         profile_picture_url = s3.upload_fileobj(f"user_files/{str(result.inserted_id)}/profile/picture{ts}.jpg", picture)
 
+        sns = SNS()
+        user = result.inserted_id
+        res = sns.add_token(user)
+          
         with Connect() as client:
             client.auth.profile.update_one({"_id": result.inserted_id}, {"$set": {"profile_picture": profile_picture_url}})
 
